@@ -32,10 +32,10 @@ Standardized the evaluation engine to use the "Real Paper" strategy:
 ## 📄 Updated Research Papers
 
 I have refined the following artifacts with the high-fidelity metrics and updated diagrams:
-- [exp9_research_paper.md](file:///C:/Users/swoop/.gemini/antigravity/brain/b64f4239-71e9-4586-b7c5-c29e219ad986/exp9_research_paper.md)
-- [exp10_research_paper.md](file:///C:/Users/swoop/.gemini/antigravity/brain/b64f4239-71e9-4586-b7c5-c29e219ad986/exp10_research_paper.md)
-- [results_execution.md](file:///c:/Users/swoop/dev/res/kgqa/kgqaHierarchical/results_execution.md)
+- [exp9_research_paper.md](documentation/research_deep_dives/exp9_research_paper.md)
+- [exp10_research_paper.md](documentation/research_deep_dives/exp10_research_paper.md)
+- [results_execution.md](results_execution.md)
 
 ## 🛠️ Technical Fixes
-- Added `load_checkpoint_robust` to [execution_eval_all.py](file:///c:/Users/swoop/dev/res/kgqa/kgqaHierarchical/eval/execution_eval_all.py) to surgically resize relation heads during evaluation.
+- Added `load_checkpoint_robust` to [execution_eval_all.py](eval/execution_eval_all.py) to surgically resize relation heads during evaluation.
 - Resolved `ModuleNotFoundError` by standardizing project root injection in scripts.

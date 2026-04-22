@@ -15,7 +15,7 @@ This paper proposes a **Universal Brain** for Knowledge Graphs. Instead of havin
 
 ## 4. System Overview (Architecture Deep Dive)
 
-The following diagram illustrates the architecture of the **UniversalPlanner** from [exp10_universal.py](file:///c:/Users/swoop/dev/res/kgqa/kgqaHierarchical/train/exp10_universal.py).
+The following diagram illustrates the architecture of the **UniversalPlanner** from [exp10_universal.py](file:///train/exp10_universal.py).
 
 ```mermaid
 flowchart TD
@@ -122,7 +122,7 @@ Let's trace a 2-hop CWQ question through the system.
 2.  **Hop 1 (MASCOT)**: The transformer layers focus on the word "mascot" and the "CWQ" context. It selects `sports.sports_team.team_mascot`.
 3.  **Hop 2 (TEAM)**: Standing on the "San Francisco Giants" entity, the model processes the remainder: "won the 2010 world series". It selects `sports.sports_team.championships`.
 4.  **STOP**: The `AdaptiveStopHead` calculates a high confidence (Stop=1.0) because the question intent is fulfilled.
-5.  **Execution**: The KG Traversal [finds correctly](file:///c:/Users/swoop/dev/res/kgqa/kgqaHierarchical/eval/execution_eval_all.py#L115) the final entity, hitting 100% accuracy for this sample.
+5.  **Execution**: The KG Traversal [finds correctly](file:///eval/execution_eval_all.py#L115) the final entity, hitting 100% accuracy for this sample.
 
 ---
 

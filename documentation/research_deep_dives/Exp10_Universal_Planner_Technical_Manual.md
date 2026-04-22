@@ -20,7 +20,7 @@ If you try to train one AI on both, the "Movie vocabulary" overwrites the "Freeb
 ## 4. Architecture Specifications
 
 ### The Dataset Fusion Layer
-Implemented in [`train/exp10_universal.py`](file:///c:/Users/swoop/dev/res/kgqa/kgqaHierarchical/train/exp10_universal.py#L120):
+Implemented in [`train/exp10_universal.py`](file:///train/exp10_universal.py#L120):
 *   **Backbone**: RoBERTa-Large (1024-dim CLS token).
 *   **Context Embedding**: `nn.Embedding(num_datasets=3, hidden_dim=512)`.
 *   **Fusion Logic**: $h_{fusion} = Linear(h_{CLS}) + Embedding(DatasetID)$.

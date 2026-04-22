@@ -20,7 +20,7 @@ The fundamental trade-off in KG reasoning is the "Fan-out" problem.
 ## 4. Architecture Specifications
 
 ### The Policy & Value Network
-Implemented in [`train/exp9_rlmc.py`](file:///c:/Users/swoop/dev/res/kgqa/kgqaHierarchical/train/exp9_rlmc.py#L22):
+Implemented in [`train/exp9_rlmc.py`](file:///train/exp9_rlmc.py#L22):
 *   **Shared Backbone**: Frozen RoBERTa-Large (1024-dim outputs).
 *   **Policy Head**: A 2-layer MLP (`1024 -> 256 -> 4`) predicting categorical probabilities for search actions.
 *   **Value Head**: A 2-layer MLP (`1024 -> 256 -> 1`) predicting the "Expected Reward" for the current state, used for PPO advantage calculation.

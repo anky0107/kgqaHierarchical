@@ -74,7 +74,7 @@ A question in CWQ is answered by a specific SPARQL query. That SPARQL query repr
 ## 6. File Reference Matrix
 | Component | Implementation File | Primary Function |
 | :--- | :--- | :--- |
-| **Triple Parsing** | [`utils/sparql_parser.py`](file:///c:/Users/swoop/dev/res/kgqa/kgqaHierarchical/utils/sparql_parser.py) | Translates SPARQL strings to (S, R, O) tuples. |
-| **Graph Structure** | [`shared/kg_loader.py`](file:///c:/Users/swoop/dev/res/kgqa/kgqaHierarchical/shared/kg_loader.py) | In-memory bidirectional adjacency list. |
-| **Evaluation Loop** | [`eval/execution_eval_all.py`](file:///c:/Users/swoop/dev/res/kgqa/kgqaHierarchical/eval/execution_eval_all.py) | Higher-fidelity physical traversal engine. |
-| **Model Loader** | [`shared/utils.py`](file:///c:/Users/swoop/dev/res/kgqa/kgqaHierarchical/shared/utils.py) | Surgical weight resizing for vocab expansion. |
+| **Triple Parsing** | [`utils/sparql_parser.py`](file:///utils/sparql_parser.py) | Translates SPARQL strings to (S, R, O) tuples. |
+| **Graph Structure** | [`shared/kg_loader.py`](file:///shared/kg_loader.py) | In-memory bidirectional adjacency list. |
+| **Evaluation Loop** | [`eval/execution_eval_all.py`](file:///eval/execution_eval_all.py) | Higher-fidelity physical traversal engine. |
+| **Model Loader** | [`shared/utils.py`](file:///shared/utils.py) | Surgical weight resizing for vocab expansion. |

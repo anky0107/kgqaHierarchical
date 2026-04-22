@@ -10,7 +10,7 @@ The objective is to expand the existing Experiment 10 documentation into a "Thes
 ## Proposed Changes
 
 ### [Component] Documentation Expansion
-#### [MODIFY] [Exp10_Universal_Planner_High_Fidelity.md](file:///c:/Users/swoop/dev/res/kgqa/kgqaHierarchical/documentation/research_deep_dives/Exp10_Universal_Planner_High_Fidelity.md)
+#### [MODIFY] [Exp10_Universal_Planner_High_Fidelity.md](file:///documentation/research_deep_dives/Exp10_Universal_Planner_High_Fidelity.md)
 - **Dataset Orchestration**:
     - Detail the `UniversalDataset` class and the `[TAG] topic: ...` prefixing logic.
     - Deep dive into `WeightedRandomSampler` and its role in preventing catastrophic forgetting.

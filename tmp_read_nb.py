@@ -1,6 +1,6 @@
 import json, sys
 
-nb = json.load(open(r'c:\Users\swoop\dev\res\kgqa\colabNotebooks\cwqAnalysis.ipynb', 'r', encoding='utf-8'))
+nb = json.load(open(r'path/to/colabNotebooks/cwqAnalysis.ipynb', 'r', encoding='utf-8'))
 cells = nb['cells']
 print(f"Total cells: {len(cells)}")
 print("="*80)
