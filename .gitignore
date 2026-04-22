@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+.project
+.pydevproject
+.settings/
+
+# Project Specific - Data and Models
+checkpoints/
+data/
+models/
+metrics/
+
+# Research Artifacts / Logs
+*_output.txt
+*_log.txt
+*_metrics.txt
+full_eval_*.txt
+*.log
+eval_blind_results.txt
+
+# System
+.DS_Store
+Thumbs.db

@@ -1,0 +1,21 @@
+# Thesis Documentation: Final Formalization
+
+- [/] Phase 1: Knowledge Base & Core Specifications
+    - [/] Document SPARQL Parser (`utils/sparql_parser.py`)
+    - [ ] Document KG Loader (`shared/kg_loader.py`)
+    - [ ] Document Execution Engine (`eval/execution_eval_all.py`)
+    - [ ] Draft "Gold Subgraph Simulation" Whitepaper section
+- [ ] Phase 2: Experiment 9 (RLMC) Thesis Manual
+    - [ ] Detail PPO Policy/Value architecture
+    - [ ] Detail Reward Tiering Logic (+1.0, +0.5, +0.1)
+    - [ ] Link to physical Top-K retrieval code
+    - [ ] Finalize Hits@1: 76.29%
+- [ ] Phase 3: Experiment 10 (Universal) Thesis Manual
+    - [ ] Detail Additive Context Fusion
+    - [ ] Detail Weighted Sampling Fair-Play logic
+    - [ ] Detail Surgical Head Expansion
+    - [ ] Cross-dataset results (MetaQA/WebQSP)
+    - [ ] Blind Evaluation latent topology section
+- [ ] Phase 4: Final Registry & Verification
+    - [ ] Update `results_execution.md` with recovered SOTA
+    - [ ] Cross-verify all file links and diagrams
