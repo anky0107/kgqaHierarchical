@@ -289,22 +289,6 @@ paper_kgqarl/
 
 ---
 
-## Citation
-
-If you use this work, please cite:
-
-```bibtex
-@inproceedings{rana2025kgqarl,
-  title     = {Knowledge Graph Question Answering Using Reinforcement Learning},
-  author    = {Rana, Ankit and Chaudhary, Chandramani},
-  booktitle = {Proceedings of IEEE Conference},
-  year      = {2025},
-  institution = {NIT Calicut}
-}
-```
-
----
-
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
