@@ -1,0 +1,49 @@
+% ============================================================
+%  fig_cds_funnel.tex — 3-Stage Cascading Dust Separator (CDS)
+% ============================================================
+
+\begin{tikzpicture}[
+  font=\small,
+  >=Stealth,
+  every node/.style={align=center},
+  arr/.style={->, draw=black!55, line width=1.5pt},
+  stagebox/.style={rectangle, rounded corners=5pt, draw=#1!75, fill=#1!8, line width=1.2pt, inner sep=10pt, minimum width=7.2cm, minimum height=1.6cm}
+]
+
+  % Input candidates node
+  \node[stagebox=blue, minimum height=1.2cm] (input) at (0,0) {
+    \textbf{Raw Candidate Set $\mathcal{B}$ from Graph Traversal} \\
+    \scriptsize $N \approx 3,803$ entities (High Recall, High Noise)
+  };
+
+  % Stage 1 Bi-Encoder Fast Pruning
+  \node[stagebox=orange, below=1.0cm of input] (s1) {
+    \textbf{Stage 1: Bi-Encoder Fast Pruning} \\
+    \scriptsize Model: \texttt{all-MiniLM-L6-v2} (Bi-Encoder) \\
+    \scriptsize Scoring: $s_1(q, e) = \cos(\mathbf{q}_{\text{bi}}, \mathbf{e}_{\text{bi}})$ (Pre-computed embed lookups) \\
+    \scriptsize Output: \textbf{Top-100 Candidates} ($97\%$ noise pruned in milliseconds)
+  };
+
+  % Stage 2 Path-Aware Sieve
+  \node[stagebox=purple, below=1.0cm of s1] (s2) {
+    \textbf{Stage 2: Path-Aware Sieve} \\
+    \scriptsize Model: \texttt{all-mpnet-base-v2} (Path-Aware Classifier) \\
+    \scriptsize Scoring: $s_2(q, p, e) = \text{MLP}([\mathbf{q}_{\text{pw}}; \mathbf{h}_p; \mathbf{h}_e])$ \\
+    \scriptsize Output: \textbf{Top-15 Candidates} (Relational path context disambiguates duplicate names)
+  };
+
+  % Stage 3 Cross-Encoder Precision Judge
+  \node[stagebox=teal, below=1.0cm of s2] (s3) {
+    \textbf{Stage 3: Preference-Aligned Generative Judge} \\
+    \scriptsize Model: \texttt{Flan-T5-Base} (DPO fine-tuned, 250M params) \\
+    \scriptsize Scoring: $s_3(q,e) = \log \pi_\theta(e \mid p)$ \;(listwise: all 15 candidates in context) \\
+    \scriptsize Training: $\mathcal{L}_{\text{DPO}}$ with $\beta_{\text{dpo}}=0.1$; ref.~model = SFT checkpoint \\
+    \scriptsize Output: \textbf{Top-1 Entity} (Final answer)
+  };
+
+  % Connecting Arrows
+  \draw[arr] (input) -- (s1);
+  \draw[arr] (s1) -- (s2);
+  \draw[arr] (s2) -- (s3);
+
+\end{tikzpicture}

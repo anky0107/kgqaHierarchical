@@ -43,7 +43,41 @@ metrics/
 full_eval_*.txt
 *.log
 eval_blind_results.txt
+temp_log.txt
 
-# System
+# Large data files
+freebase-rdf-latest.gz
+*.gz
+*.pt
+*.bin
+*.safetensors
+
+# Scratch / temp
+scratch/
+new_files/
+notes/
+
+# Old paper drafts (keep only paper_kgqarl/)
+paper_101.tex
+paper_101_revised.tex
+paper_101.pdf
+diagrams_101.tex
+ppt.tex
+ppt_example.tex
+ppt.pdf
+
+# PDFs (generated, not source)
+*.pdf
+!paper_kgqarl/**/*.pdf
+
+# Misc
 .DS_Store
 Thumbs.db
+faltu.ipynb
+tmp_read_nb.py
+write_docs.py
+generate_all_styles.py
+generate_prototypes.py
+README_exp30_exp31.md
+SYSTEM_GUIDE.md
+KNOWLEDGE_BASE.md

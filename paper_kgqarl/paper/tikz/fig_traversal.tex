@@ -1,0 +1,117 @@
+% ============================================================
+%  fig_traversal.tex  — Four Traversal Actions
+% ============================================================
+
+\begin{tikzpicture}[
+  font=\small,
+  >=Stealth,
+  node distance=0.4cm,
+  every node/.style={align=center},
+  arr/.style={->, draw=gray!70, line width=0.75pt},
+]
+
+% ---- TIGHT ----
+\node[
+  rectangle, rounded corners=4pt,
+  draw=green!65, fill=green!18,
+  inner sep=7pt, minimum width=3.0cm, minimum height=0.8cm,
+  line width=1.1pt, font=\small\bfseries
+] (t_h) at (0,0) {TIGHT};
+
+\node[
+  rectangle, rounded corners=3pt,
+  draw=green!45, fill=green!6,
+  inner sep=5pt, minimum width=3.0cm, minimum height=1.0cm,
+  font=\footnotesize, below=0.3cm of t_h
+] (t_b) {Beam $k=1$\\Top-1 relation\\High precision};
+
+\node[font=\footnotesize\itshape, text=gray!70, below=0.2cm of t_b]
+  {One direct path\\no branching};
+
+\begin{scope}[on background layer]
+  \node[
+    rectangle, rounded corners=6pt,
+    draw=green!35, fill=green!4, line width=0.7pt,
+    fit=(t_h)(t_b), inner sep=9pt
+  ] {};
+\end{scope}
+
+% ---- MEDIUM ----
+\node[
+  rectangle, rounded corners=4pt,
+  draw=blue!70, fill=blue!18,
+  inner sep=7pt, minimum width=3.0cm, minimum height=0.8cm,
+  line width=1.1pt, font=\small\bfseries, right=1.2cm of t_h
+] (m_h) {MEDIUM};
+
+\node[
+  rectangle, rounded corners=3pt,
+  draw=blue!50, fill=blue!6,
+  inner sep=5pt, minimum width=3.0cm, minimum height=1.0cm,
+  font=\footnotesize, below=0.3cm of m_h
+] (m_b) {Beam $k=5$\\Top-5 relations\\Balanced search};
+
+\node[font=\footnotesize\itshape, text=gray!70, below=0.2cm of m_b]
+  {Five candidate paths\\moderate expansion};
+
+\begin{scope}[on background layer]
+  \node[
+    rectangle, rounded corners=6pt,
+    draw=blue!30, fill=blue!4, line width=0.7pt,
+    fit=(m_h)(m_b), inner sep=9pt
+  ] {};
+\end{scope}
+
+% ---- LOOSE ----
+\node[
+  rectangle, rounded corners=4pt,
+  draw=orange!75, fill=orange!18,
+  inner sep=7pt, minimum width=3.0cm, minimum height=0.8cm,
+  line width=1.1pt, font=\small\bfseries, right=1.2cm of m_h
+] (l_h) {LOOSE};
+
+\node[
+  rectangle, rounded corners=3pt,
+  draw=orange!55, fill=orange!6,
+  inner sep=5pt, minimum width=3.0cm, minimum height=1.0cm,
+  font=\footnotesize, below=0.3cm of l_h
+] (l_b) {Beam $k=50$\\Domain-wide search\\High recall};
+
+\node[font=\footnotesize\itshape, text=gray!70, below=0.2cm of l_b]
+  {Up to 50 relations\\broad exploration};
+
+\begin{scope}[on background layer]
+  \node[
+    rectangle, rounded corners=6pt,
+    draw=orange!40, fill=orange!4, line width=0.7pt,
+    fit=(l_h)(l_b), inner sep=9pt
+  ] {};
+\end{scope}
+
+% ---- STOP ----
+\node[
+  rectangle, rounded corners=4pt,
+  draw=red!65, fill=red!15,
+  inner sep=7pt, minimum width=3.0cm, minimum height=0.8cm,
+  line width=1.1pt, font=\small\bfseries, right=1.2cm of l_h
+] (s_h) {STOP};
+
+\node[
+  rectangle, rounded corners=3pt,
+  draw=red!45, fill=red!5,
+  inner sep=5pt, minimum width=3.0cm, minimum height=1.0cm,
+  font=\footnotesize, below=0.3cm of s_h
+] (s_b) {Terminate path\\Dynamic depth\\Early exit};
+
+\node[font=\footnotesize\itshape, text=gray!70, below=0.2cm of s_b]
+  {No further expansion\\answer collected};
+
+\begin{scope}[on background layer]
+  \node[
+    rectangle, rounded corners=6pt,
+    draw=red!35, fill=red!4, line width=0.7pt,
+    fit=(s_h)(s_b), inner sep=9pt
+  ] {};
+\end{scope}
+
+\end{tikzpicture}

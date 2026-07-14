@@ -1,0 +1,73 @@
+% ============================================================
+%  fig_pipeline.tex — Multi-Stage Training Pipeline
+% ============================================================
+
+\begin{tikzpicture}[
+  font=\small,
+  >=Stealth,
+  every node/.style={align=center},
+  arr/.style={->, draw=black!55, line width=1.2pt},
+  annot/.style={font=\footnotesize\itshape, text=gray!75},
+]
+
+% ---- Stage I ----
+\node[
+  rectangle, rounded corners=5pt,
+  draw=blue!65, fill=blue!10,
+  inner sep=8pt, minimum width=3.0cm, minimum height=3.2cm,
+  line width=1.0pt
+] (s1) at (0,0) {};
+\node[font=\small\bfseries, text=blue!80] at ([yshift=-14pt]s1.north) {Stage~I};
+\node[font=\footnotesize] at ([yshift=4pt]s1.center)
+  {Semantic Planner\\Pretraining\\[4pt]
+   \scriptsize RoBERTa-Large\\AdamW, lr=1e-5\\30 epochs\\
+   $\mathcal{L}_\mathrm{rel}+\mathcal{L}_\mathrm{dom}+\mathcal{L}_\mathrm{stop}$};
+
+% ---- Stage II ----
+\node[
+  rectangle, rounded corners=5pt,
+  draw=purple!65, fill=purple!8,
+  inner sep=8pt, minimum width=3.0cm, minimum height=3.2cm,
+  line width=1.0pt, right=1.0cm of s1
+] (s2) {};
+\node[font=\small\bfseries, text=purple!80] at ([yshift=-14pt]s2.north) {Stage~II};
+\node[font=\footnotesize] at ([yshift=4pt]s2.center)
+  {RL Traversal\\Controller\\[4pt]
+   \scriptsize Planner \textbf{frozen}\\PPO + Cosine align\\AdamW, lr=1e-4\\
+   10 epochs, $\gamma$=0.99};
+
+% ---- STRL ----
+\node[
+  rectangle, rounded corners=5pt,
+  draw=teal!65, fill=teal!8,
+  inner sep=8pt, minimum width=3.0cm, minimum height=3.2cm,
+  line width=1.0pt, right=1.0cm of s2
+] (strl) {};
+\node[font=\small\bfseries, text=teal!80] at ([yshift=-14pt]strl.north) {STRL};
+\node[font=\footnotesize] at ([yshift=4pt]strl.center)
+  {Semantic-Teacher\\RL Variant\\[4pt]
+   \scriptsize Joint fine-tune\\InfoNCE + PPO\\
+   $\lambda_\mathrm{sem}$: 1.0\,$\to$\,0.3\\
+   20 epochs};
+
+% ---- Stage III ----
+\node[
+  rectangle, rounded corners=5pt,
+  draw=green!60, fill=green!8,
+  inner sep=8pt, minimum width=3.0cm, minimum height=3.2cm,
+  line width=1.0pt, right=1.0cm of strl
+] (s3) {};
+\node[font=\small\bfseries, text=green!70] at ([yshift=-14pt]s3.north) {Stage~III};
+\node[font=\footnotesize] at ([yshift=4pt]s3.center)
+   {CDS Ranker\\(Independent)\\[4pt]
+    \scriptsize 3-Stage Cascading Funnel\\
+    \scriptsize MiniLM $\to$ MPNet $\to$ BGE\\
+    \scriptsize Distilled w/ 15 negatives\\
+    \scriptsize 5 epochs};
+
+% ---- Connecting arrows ----
+\draw[arr] (s1.east)   -- node[above,annot]{frozen}  (s2.west);
+\draw[arr] (s2.east)   -- node[above,annot]{or}      (strl.west);
+\draw[arr] (strl.east) -- node[above,annot]{outputs} (s3.west);
+
+\end{tikzpicture}

@@ -1,0 +1,156 @@
+% ============================================================
+%  fig_working_example.tex
+%  Adaptive Traversal Trace: Standard RL vs STRL
+%  Every relation branch terminates at an entity node
+% ============================================================
+
+\begin{tikzpicture}[
+  font=\small,
+  >=Stealth,
+  every node/.style={align=center},
+  % Entity nodes
+  enode/.style={
+    circle, draw=blue!65, fill=blue!10,
+    inner sep=2pt, minimum size=0.85cm,
+    font=\scriptsize\bfseries
+  },
+  anode/.style={
+    circle, draw=green!60, fill=green!12,
+    inner sep=2pt, minimum size=0.85cm,
+    font=\scriptsize\bfseries, line width=1.1pt
+  },
+  nnode/.style={
+    circle, draw=gray!40, fill=gray!6,
+    inner sep=1pt, minimum size=0.75cm,
+    font=\tiny, dashed
+  },
+  % Relation label boxes
+  orel/.style={
+    rectangle, rounded corners=2pt,
+    draw=orange!55, fill=orange!7,
+    inner sep=2pt, minimum width=1.8cm, minimum height=0.42cm,
+    font=\tiny
+  },
+  rrel/.style={
+    rectangle, rounded corners=2pt,
+    draw=red!50, fill=red!5,
+    inner sep=2pt, minimum width=1.8cm, minimum height=0.42cm,
+    font=\tiny
+  },
+  grel/.style={
+    rectangle, rounded corners=2pt,
+    draw=green!55, fill=green!5,
+    inner sep=2pt, minimum width=1.8cm, minimum height=0.42cm,
+    font=\tiny
+  },
+  % Action pills
+  opill/.style={
+    rectangle, rounded corners=5pt,
+    draw=orange!65, fill=orange!11,
+    inner sep=3pt, font=\scriptsize\bfseries, text=orange!80
+  },
+  rpill/.style={
+    rectangle, rounded corners=5pt,
+    draw=red!60, fill=red!9,
+    inner sep=3pt, font=\scriptsize\bfseries, text=red!75
+  },
+  gpill/.style={
+    rectangle, rounded corners=5pt,
+    draw=green!65, fill=green!10,
+    inner sep=3pt, font=\scriptsize\bfseries, text=green!75
+  },
+  % Arrows
+  oarr/.style={->, draw=orange!60, line width=0.65pt},
+  rarr/.style={->, draw=red!50, line width=0.65pt},
+  Garr/.style={->, draw=green!65, line width=1.2pt},
+  mainarr/.style={->, draw=blue!70, line width=1.1pt},
+]
+
+% ╔══════════════════════════════════════════════════════════╗
+% ║   Standard RL  (MEDIUM at hop1, LOOSE at hop2)          ║
+% ╚══════════════════════════════════════════════════════════╝
+\node[font=\small\bfseries, text=blue!65] at (0, 1.0) {RLMC};
+
+% Hop 0 entity
+\node[enode] (a0) at (0,0) {Jerry\\Jones};
+
+% ── MEDIUM (k=5): 5 relation nodes each ending at entity ──
+\node[opill] at (2.8, 0.82) {MEDIUM $k$\,=\,5};
+\node[font=\tiny, text=gray!65] at (2.8, 0.56) {conf\,=\,0.65};
+
+% relation + destination pairs (branch out vertically)
+\node[orel] (m1r) at (3.8, 2.1)  {\textit{team.owner}};     \node[enode] (m1e) at (5.7, 2.1)  {Dallas\\Cowboys};
+\node[orel] (m2r) at (3.8, 1.1)  {\textit{sports.owner}};   \node[nnode] (m2e) at (5.7, 1.1)  {NFL\\Ownership};
+\node[orel] (m3r) at (3.8, 0.0)  {\textit{business.asset}}; \node[nnode] (m3e) at (5.7, 0.0)  {AT\&T\\Stadium};
+\node[orel] (m4r) at (3.8,-1.1)  {\textit{org.founder}};    \node[nnode] (m4e) at (5.7,-1.1)  {Jones\\Ventures};
+\node[orel] (m5r) at (3.8,-2.1)  {\textit{family.member}};  \node[nnode] (m5e) at (5.7,-2.1)  {Charlotte\\Jones};
+
+\draw[oarr] (a0) -- (m1r); \draw[oarr] (m1r) -- (m1e);
+\draw[oarr, draw=orange!40] (a0) -- (m2r); \draw[oarr, draw=orange!35] (m2r) -- (m2e);
+\draw[oarr, draw=orange!35] (a0) -- (m3r); \draw[oarr, draw=orange!30] (m3r) -- (m3e);
+\draw[oarr, draw=orange!25] (a0) -- (m4r); \draw[oarr, draw=orange!25] (m4r) -- (m4e);
+\draw[oarr, draw=orange!20] (a0) -- (m5r); \draw[oarr, draw=orange!20] (m5r) -- (m5e);
+
+% ── LOOSE (k=50): from Dallas Cowboys, 3 visible + dots ──
+\node[rpill] at (8.5, 3.0) {LOOSE $k$\,=\,50};
+\node[font=\tiny, text=gray!65] at (8.5, 2.74) {conf\,=\,0.40};
+
+\node[rrel] (l1r) at (8.5, 2.25)  {\textit{football.hist\_coach}}; \node[enode] (l1e) at (10.5, 2.25) {Barry\\Switzer};
+\node[rrel] (l2r) at (8.5, 1.35)  {\textit{nfl.division}};          \node[nnode] (l2e) at (10.5, 1.35) {NFC East};
+\node[rrel] (l3r) at (8.5, 0.45)  {\textit{sports.venue}};          \node[nnode] (l3e) at (10.5, 0.45) {AT\&T\\Stadium};
+\node[font=\footnotesize, text=gray!55] at (9.5,-0.3) {$\vdots$\ (47 more entities)};
+
+\draw[rarr] (m1e) -- (l1r); \draw[rarr] (l1r) -- (l1e);
+\draw[rarr, draw=red!35] (m1e) -- (l2r); \draw[rarr, draw=red!35] (l2r) -- (l2e);
+\draw[rarr, draw=red!25] (m1e) -- (l3r); \draw[rarr, draw=red!25] (l3r) -- (l3e);
+
+% ── Massive Noise Candidate Answer Set (Hit@N Candidates) ──
+\node[rectangle, rounded corners=3pt, draw=red!60, fill=red!4, font=\scriptsize\bfseries, inner sep=4pt, line width=0.8pt] (cset) at (12.8, 0.5) {Final Traversed\\Hit@N Answer Set\\(1,250 Candidates)};
+
+% Outflow arrows from each traversed node to show they are all collected into Hit@N Candidates set
+\draw[->, draw=red!45, dashed, line width=0.6pt] (l1e.east) to[out=0, in=160] (cset.west);
+\draw[->, draw=red!45, dashed, line width=0.6pt] (l2e.east) to[out=0, in=170] (cset.west);
+\draw[->, draw=red!45, dashed, line width=0.6pt] (l3e.east) to[out=0, in=180] (cset.west);
+\draw[->, draw=red!35, dashed, line width=0.5pt] (m2e.east) to[out=0, in=190] (cset.west);
+\draw[->, draw=red!30, dashed, line width=0.5pt] (m3e.east) to[out=0, in=200] (cset.west);
+\draw[->, draw=red!25, dashed, line width=0.5pt] (m4e.east) to[out=0, in=210] (cset.west);
+\draw[->, draw=red!20, dashed, line width=0.5pt] (m5e.east) to[out=0, in=220] (cset.west);
+
+% ══ Divider ══
+\draw[gray!35, dashed, line width=0.4pt] (-0.8,-3.0) -- (14.2,-3.0);
+
+% ╔══════════════════════════════════════════════════════════╗
+% ║   STRL  (TIGHT at every hop)                            ║
+% ╚══════════════════════════════════════════════════════════╝
+\node[font=\small\bfseries, text=green!65] at (0,-3.6) {STRL};
+
+\node[enode] (b0) at (0,-4.5) {Jerry\\Jones};
+
+% ── Hop 1 TIGHT ──
+\node[gpill] at (2.8,-3.9) {TIGHT $k$\,=\,1};
+\node[font=\tiny, text=gray!65] at (2.8,-4.15) {conf\,=\,0.88};
+\node[grel] (t1r) at (3.8,-4.5) {\textit{team.owner}};
+\node[enode] (t1e) at (5.7,-4.5) {Dallas\\Cowboys};
+\draw[Garr] (b0) -- (t1r);
+\draw[Garr] (t1r) -- (t1e);
+
+% ── Hop 2 TIGHT ──
+\node[gpill] at (8.5,-3.9) {TIGHT $k$\,=\,1};
+\node[font=\tiny, text=gray!65] at (8.5,-4.15) {conf\,=\,0.82};
+\node[grel] (t2r) at (8.5,-4.5) {\textit{football.hist\_coach}};
+\node[enode] (t2e) at (10.5,-4.5) {Barry\\Switzer};
+\draw[Garr] (t1e) -- (t2r);
+\draw[Garr] (t2r) -- (t2e);
+
+% ── STOP ──
+\node[gpill] at (10.5,-5.35) {STOP};
+\node[anode, below=0.5cm of t2e] (ans) {Coach\\1996};
+\draw[Garr] (t2e) -- (ans);
+
+% ── Exact hit@1 candidate ──
+\node[rectangle, rounded corners=3pt, draw=green!60, fill=green!5, font=\scriptsize\bfseries, inner sep=4pt, line width=0.8pt] (gset) at (12.8, -4.5) {Exact Traversed\\Hit@1 Answer Set\\(1 Candidate)};
+
+\draw[->, draw=green!65, line width=1.1pt] (t2e.east) -- (gset.west);
+\draw[->, draw=green!65, line width=1.1pt] (ans.east) to[out=0, in=200] (gset.west);
+
+\end{tikzpicture}

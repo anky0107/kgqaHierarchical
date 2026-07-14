@@ -1,0 +1,93 @@
+% ============================================================
+%  fig_kg.tex — Complex Multi-Hop Knowledge Graph (Spacious Spread)
+%  Shows multiple entities, relation types, branching structure
+%  Highlight path: Jerry Jones → Dallas Cowboys → Barry Switzer
+% ============================================================
+
+\begin{tikzpicture}[
+  font=\small,
+  >=Stealth,
+  every node/.style={align=center},
+  % Entity circles
+  entity/.style={
+    circle, draw=blue!60, fill=blue!10,
+    inner sep=3pt, minimum size=1.1cm,
+    font=\scriptsize\bfseries, line width=0.9pt
+  },
+  centity/.style={
+    circle, draw=teal!70, fill=teal!12,
+    inner sep=3pt, minimum size=1.2cm,
+    font=\scriptsize\bfseries, line width=1.2pt
+  },
+  aentity/.style={
+    circle, draw=green!65, fill=green!12,
+    inner sep=3pt, minimum size=1.1cm,
+    font=\scriptsize\bfseries, line width=1.2pt
+  },
+  noise/.style={
+    circle, draw=gray!45, fill=gray!6,
+    inner sep=2pt, minimum size=0.9cm,
+    font=\tiny, line width=0.5pt, dashed
+  },
+  % Relation edge labels (Centered, sloped, small text)
+  rel/.style={font=\tiny, fill=white, inner sep=1.2pt, text=gray!70},
+  hrel/.style={font=\tiny, fill=white, inner sep=1.2pt, text=teal!70},
+  % Arrows
+  earr/.style={->, draw=gray!50, line width=0.65pt},
+  harr/.style={->, draw=teal!70, line width=1.4pt},
+]
+
+% -------------------------------------------------------
+% CENTER — Topic Entity
+% -------------------------------------------------------
+\node[centity]  (jj)   at (0,0)        {Jerry\\Jones};
+
+% -------------------------------------------------------
+% HOP 1 — Direct relations from Jerry Jones (Widely spaced)
+% -------------------------------------------------------
+\node[aentity]  (dc)   at (5.2, 1.5)   {Dallas\\Cowboys};   % CORRECT PATH
+\node[entity]   (nfl)  at (5.2,-0.8)   {NFL};
+\node[entity]   (atnt) at (5.2,-2.8)   {AT\&T\\Stadium};
+\node[entity]   (biz)  at (-1.5,-3.2)  {Jones\\Ventures};
+\node[entity]   (fam)  at (-4.5, 0.8)  {Charlotte\\Jones};
+
+% Hop 1 edges (Sloped, perfectly centered, zero node overlap)
+\draw[earr] (jj) -- node[rel,above,sloped,pos=0.5]{org.member\_of} (nfl);
+\draw[earr] (jj) -- node[rel,above,sloped,pos=0.5]{business.asset} (atnt);
+\draw[earr] (jj) -- node[rel,above,sloped,pos=0.5]{business.founder} (biz);
+\draw[earr] (jj) -- node[rel,above,sloped,pos=0.5]{family.sibling} (fam);
+
+% Hop 1 CORRECT edge
+\draw[harr] (jj) -- node[hrel,above,sloped,pos=0.5]{team.owner} (dc);
+
+% -------------------------------------------------------
+% HOP 2 — Relations from Dallas Cowboys (Widely spaced at x=11.2)
+% -------------------------------------------------------
+\node[aentity]  (bs)   at (11.2, 2.7)   {Barry\\Switzer};    % ANSWER
+\node[entity]   (eag)  at (11.2, 0.8)   {NFC East\\Div.};
+\node[entity]   (att2) at (11.2,-1.0)   {AT\&T\\Stadium};
+\node[entity]   (sb)   at (11.2,-2.8)   {Super Bowl\\XXX};
+
+\draw[earr] (dc) -- node[rel,above,sloped,pos=0.5]{sports.division} (eag);
+\draw[earr] (dc) -- node[rel,above,sloped,pos=0.5]{sports.venue} (att2);
+\draw[earr] (dc) -- node[rel,above,sloped,pos=0.5]{sports.champion} (sb);
+
+% Hop 2 CORRECT edge
+\draw[harr] (dc) -- node[hrel,above,sloped,pos=0.5]{football.head\_coach (1996)} (bs);
+
+% -------------------------------------------------------
+% HOP 2 — Relations from NFL (noise branch)
+% Roger Goodell is placed to the right of NFL to avoid AT&T Stadium (at x=5.2)
+% -------------------------------------------------------
+\node[noise]  (n2)  at (8.2,-1.6)  {Roger\\Goodell};
+\draw[earr, draw=gray!35] (nfl) -- node[rel,above,sloped,pos=0.5]{commissioner} (n2);
+
+% -------------------------------------------------------
+% LEGEND (Centered at x=5.6)
+% -------------------------------------------------------
+\node[font=\tiny\bfseries, text=teal!70] at (5.6,-4.3) {%
+  \tikz\draw[harr](-0.2,0)--(0.5,0); Key reasoning path};
+\node[font=\tiny, text=gray!70] at (5.6,-4.7) {%
+  \tikz\draw[earr, gray!45](-0.2,0)--(0.5,0); Noise / irrelevant edges (motivate adaptive traversal)};
+
+\end{tikzpicture}

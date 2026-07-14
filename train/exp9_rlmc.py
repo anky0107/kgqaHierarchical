@@ -14,7 +14,7 @@ from transformers import RobertaTokenizer
 from tqdm import tqdm
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(ROOT)
+sys.path.insert(0, ROOT)
 
 from train.exp6_unified import UnifiedDataset, collate_unified
 from train.exp7_roberta import ScaledUnifiedPlanner

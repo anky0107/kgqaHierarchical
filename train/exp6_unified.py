@@ -13,7 +13,7 @@ from transformers import BertTokenizer
 from tqdm import tqdm
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(ROOT)
+sys.path.insert(0, ROOT)
 
 from shared.encoder import QuestionEncoder
 from utils.sparql_parser import find_reasoning_path

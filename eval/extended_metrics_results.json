@@ -1,0 +1,28 @@
+[
+    {
+        "Model": "Exp 9 (RL-MC)",
+        "EM (Hit@1)": 0.0,
+        "Hits@5": 0.011422044545973729,
+        "Hits@10": 0.019703026841804683,
+        "Path Accuracy": 0.653912050256996,
+        "Depth Accuracy": 0.7447173043974872,
+        "Avg Edges Expanded": 33935.185893774986,
+        "Latency (ms/q)": 176.72640960057214,
+        "Peak RAM (MB)": 4.521496772766113,
+        "Peak VRAM (MB)": 2843.4541015625,
+        "F1": 0.0
+    },
+    {
+        "Model": "Exp 15 (STRL + CDS)",
+        "EM (Hit@1)": 0.0,
+        "Hits@5": 0.0,
+        "Hits@10": 0.0,
+        "Path Accuracy": 0.0017133066818960593,
+        "Depth Accuracy": 0.3303826384922901,
+        "Avg Edges Expanded": 5854.598229583095,
+        "Latency (ms/q)": 33.98082448304687,
+        "Peak RAM (MB)": 4.014004707336426,
+        "Peak VRAM (MB)": 2833.548828125,
+        "F1": 0.0
+    }
+]

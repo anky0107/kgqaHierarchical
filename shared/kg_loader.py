@@ -68,6 +68,7 @@ def build_kg_from_cwq_triples(json_paths, extractor_fn):
         with open(path, 'r', encoding='utf-8') as f:
             data = json.load(f)
             for item in data:
+                if 'sparql' not in item: continue
                 triples = extractor_fn(item['sparql'])
                 for subj, rel, obj in triples:
                     subj_clean = subj.replace('ns:', '')

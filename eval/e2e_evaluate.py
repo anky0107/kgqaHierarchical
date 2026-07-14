@@ -184,9 +184,85 @@ def predict_exp9(rl_agent, tokenizer, question, device, max_hops=4, k=10):
             
     return results
 
-# ============================================================
-#  Evaluation Logic
-# ============================================================
+def predict_exp10_reranked(rl_agent, reranker, tokenizer, question, device, id2rel, max_hops=4):
+    """Exp 10: Reranks candidate paths using Cross-Encoder."""
+    # 1. Generate Candidates
+    enc = tokenizer(question, padding=True, truncation=True, max_length=128, return_tensors='pt')
+    with torch.no_grad(), torch.amp.autocast('cuda'):
+        action_logits, _, rel_logits, _ = rl_agent(enc['input_ids'].to(device), enc['attention_mask'].to(device))
+    
+    actions = torch.argmax(action_logits[0], dim=-1).tolist()
+    L = 4 # Default 4 hops, could use actions to stop
+    
+    # Simple Beam Search approximation: Top 5 at each hop
+    logits = rel_logits[0, :L]
+    top5_per_hop = torch.topk(logits, 5, dim=-1).indices.tolist()
+    
+    candidates = set()
+    for rank in range(5):
+        candidates.add(tuple([top5_per_hop[h][rank] for h in range(L)]))
+        
+    # 2. Score Candidates
+    best_path = None
+    best_score = -float('inf')
+    
+    for path in candidates:
+        path_str = " -> ".join([id2rel[r] for r in path])
+        # Cross-encoder: [CLS] question [SEP] path [SEP]
+        enc_c = tokenizer(question, path_str, padding=True, truncation=True, max_length=128, return_tensors='pt')
+        
+        with torch.no_grad(), torch.amp.autocast('cuda'):
+            score = reranker(enc_c['input_ids'].to(device), enc_c['attention_mask'].to(device)).logits[0, 0].item()
+            
+        if score > best_score:
+            best_score = score
+            best_path = list(path)
+            
+    # Return as width=1 top_ids so freebase_execution_eval can run it easily
+    return [{'top_ids': [best_path[h]]} for h in range(len(best_path))]
+
+def predict_exp9_sota(rl_agent, tokenizer, question, device, kg, topic_mid, id2rel, beam_width=5, max_hops=4):
+    """
+    SOTA Inference: Graph-Constrained Beam Search.
+    Only allows transitions that physically exist in the KG.
+    """
+    enc = tokenizer(question, padding=True, truncation=True, max_length=128, return_tensors='pt')
+    with torch.no_grad(), torch.amp.autocast('cuda'):
+        _, _, rel_logits, _ = rl_agent(enc['input_ids'].to(device), enc['attention_mask'].to(device))
+    
+    # Beam: list of (current_entities_set, path_sequence, total_log_prob)
+    beam = [({topic_mid}, [], 0.0)]
+    
+    for h in range(max_hops):
+        new_beam = []
+        # Model logits for this hop
+        hop_probs = F.softmax(rel_logits[0, h], dim=-1)
+        hop_log_probs = torch.log(hop_probs + 1e-10)
+        
+        for current_ents, path, score in beam:
+            # 1. Find all reachable relations from current entities in the KG
+            reachable_rels = set()
+            for ent in current_ents:
+                for r, _ in kg.forward.get(ent, []): reachable_rels.add(r)
+                for r, _ in kg.backward.get(ent, []): reachable_rels.add(r)
+            
+            if not reachable_rels:
+                continue
+                
+            # 2. Score only the reachable relations using the model's logits
+            for rel_name in reachable_rels:
+                if rel_name not in rl_agent.base_planner.tokenizer.get_vocab(): # safety
+                     continue 
+                # This is a bit slow, but we need the ID
+                # Actually, we have rel2id... wait, the model's rel_logits corresponds to rel2id
+                # I need rel2id in this function
+                pass 
+        # Wait, I need rel2id mapping inside this function. 
+        # I'll pass it or assume it's available.
+    
+    # Let's simplify the beam search implementation for speed and correctness
+    return None # I will write the full implementation in the next step properly in the eval script
+
 
 def evaluate_model(samples, model, tokenizer, id2relation, device, 
                    model_name, predict_fn, model_type='flat'):

@@ -1,0 +1,154 @@
+% ============================================================
+%  fig_architecture.tex  — Symmetrical Vertical Layout with Perfectly Aligned Side Labels
+% ============================================================
+
+\begin{tikzpicture}[
+  font=\small,
+  >=Stealth,
+  every node/.style={align=center},
+  % ---- box styles ----
+  qbox/.style={
+    rectangle, rounded corners=3pt,
+    draw=gray!55, fill=white,
+    inner sep=4pt, minimum width=2.5cm, minimum height=0.58cm,
+    font=\footnotesize
+  },
+  bluebox/.style={
+    rectangle, rounded corners=4pt,
+    draw=blue!70, fill=blue!12,
+    inner sep=5pt, minimum width=2.6cm, minimum height=0.72cm,
+    line width=1.1pt, font=\footnotesize\bfseries
+  },
+  tealbox/.style={
+    rectangle, rounded corners=4pt,
+    draw=teal!70, fill=teal!10,
+    inner sep=5pt, minimum width=2.6cm, minimum height=0.72cm,
+    line width=1.1pt, font=\footnotesize\bfseries
+  },
+  ppobox/.style={
+    rectangle, rounded corners=4pt,
+    draw=orange!75, fill=orange!10,
+    inner sep=5pt, minimum width=2.6cm, minimum height=0.72cm,
+    line width=1.1pt, font=\footnotesize\bfseries
+  },
+  cdsbox/.style={
+    rectangle, rounded corners=4pt,
+    draw=purple!65, fill=purple!8,
+    inner sep=5pt, minimum width=2.6cm, minimum height=0.72cm,
+    line width=1.1pt, font=\footnotesize\bfseries
+  },
+  headbox/.style={
+    rectangle, rounded corners=3pt,
+    draw=gray!50, fill=gray!7,
+    inner sep=4pt, minimum width=1.8cm, minimum height=0.55cm,
+    font=\scriptsize
+  },
+  actbox/.style={
+    rectangle, rounded corners=4pt,
+    draw=orange!75, fill=orange!5,
+    inner sep=5pt, minimum width=2.8cm, minimum height=0.72cm,
+    line width=1.1pt, font=\footnotesize\bfseries
+  },
+  arr/.style={->, draw=gray!60, line width=0.7pt},
+  Arr/.style={->, draw=black!60, line width=1.2pt},
+]
+
+% ══════════════════════════════════════════════════════
+% STAGE I — Semantic Planner (Top Block, Centered at x=0)
+% ══════════════════════════════════════════════════════
+\node[qbox]      (q)    at (0, 0)    {Input Question};
+\node[bluebox]   (rob)  at (0, -0.9) {\textbf{RoBERTa-Large}};
+\node[qbox]      (cls)  at (0, -1.8) {CLS Pooling};
+\node[qbox]      (proj) at (0, -2.7) {Linear Projection};
+
+% Symmetrical Stage I Branching
+\node[headbox]   (dom)  at (-1.3, -3.8) {Domain Head\\$P(d|q)$};
+\node[headbox]   (conf) at (1.3, -3.8)  {Confidence Head\\$\eta_q$};
+
+\draw[arr] (q)    -- (rob);
+\draw[arr] (rob)  -- node[right,font=\tiny,text=gray]{$\mathbb{R}^{1024}$} (cls);
+\draw[arr] (cls)  -- (proj);
+\draw[arr] (proj.south) -| (dom.north);
+\draw[arr] (proj.south) -| (conf.north);
+
+\begin{scope}[on background layer]
+  \node[
+    rectangle, rounded corners=7pt,
+    draw=blue!25, fill=blue!4, line width=0.8pt,
+    fit=(q)(rob)(cls)(proj)(dom)(conf), inner sep=10pt
+  ] (P1) {};
+\end{scope}
+
+% ══════════════════════════════════════════════════════
+% STAGE II — Traversal Controller (Middle Block, Centered at x=0, y=-6.0)
+% ══════════════════════════════════════════════════════
+\node[qbox]      (hop)   at (0, -6.0)    {Hop-Position\\Embeddings};
+\node[tealbox]   (trans) at (0, -7.1) {\textbf{Cross-Hop Attention}\\
+                                         \small \textbf{Transformer Encoder}};
+
+% Symmetrical Stage II Heads (Stop on left, Relation on right)
+\node[headbox]   (stop)  at (-1.3, -8.3) {Stop Head\\$P(\text{stop}_h|q)$};
+\node[headbox]   (rel)   at (1.3, -8.3)  {Relation Head\\$P(r_h|q)$};
+
+\draw[arr] (hop)   -- node[fill=white,inner sep=1.5pt,font=\tiny,text=black]{$H^{(0)}_h = z_q + E_{\text{hop}, h}$} (trans);
+\draw[arr] (trans.south) -| (stop.north);
+\draw[arr] (trans.south) -| (rel.north);
+
+% Centered PPO Controller directly below the heads
+\node[ppobox]    (ppo)     at (0, -9.6) {\textbf{RL Meta-Constraint}\\ \small \textbf{Controller (PPO)}};
+
+% Selected Action directly below PPO Controller
+\node[actbox]    (sel_act) at (0, -10.9) {Selected Action\\$a_t \in \{\text{TIGHT}, \text{MEDIUM}, \text{LOOSE}, \text{STOP}\}$};
+
+% Connections within Stage II
+\draw[arr] (trans.south) -- node[left,font=\tiny,text=gray,near start]{$h_h$} (ppo.north);
+\draw[arr] (stop.south) -- (ppo.north west);
+\draw[arr] (ppo) -- (sel_act);
+
+\begin{scope}[on background layer]
+  \node[
+    rectangle, rounded corners=7pt,
+    draw=teal!25, fill=teal!3, line width=0.8pt,
+    fit=(hop)(trans)(stop)(rel)(ppo)(sel_act), inner sep=12pt
+  ] (P2) {};
+\end{scope}
+
+% ══════════════════════════════════════════════════════
+% STAGE III — CDS Ranker (Bottom Block, Centered at x=0, y=-13.1)
+% ══════════════════════════════════════════════════════
+\node[cdsbox]    (cds) at (0, -13.1) {\textbf{CDS Ranker}\\
+                                        \small Path-Aware Contrastive};
+
+\node[qbox]      (ans) at (0, -14.4) {Final Answer};
+
+\draw[arr] (cds) -- (ans);
+
+\begin{scope}[on background layer]
+  % Make P3 box match the width of P1 and P2 by defining dummy coordinate nodes and fitting them
+  \coordinate (padL) at (-2.3, -13.1);
+  \coordinate (padR) at (2.3, -13.1);
+  \node[
+    rectangle, rounded corners=7pt,
+    draw=purple!20, fill=purple!3, line width=0.8pt,
+    fit=(cds)(ans)(padL)(padR), inner sep=10pt
+  ] (P3) {};
+\end{scope}
+
+% ══════════════════════════════════════════════════════
+% CROSS-STAGE PIPELINE ARROWS (Vertical backbone connection)
+% ══════════════════════════════════════════════════════
+
+% 1. Stage I -> Stage II Initializer (Vertical connection in center)
+\draw[Arr] (proj.south) -- node[fill=white,inner sep=2pt,font=\tiny,text=black]{Initial state $z_q$} (hop.north);
+
+% 2. Selected Action flowing straight down into Stage III CDS Ranker
+\draw[Arr] (sel_act.south) -- node[fill=white,inner sep=2pt,font=\tiny,text=black]{Traversal Action $a_t$} (cds.north);
+
+% ══════════════════════════════════════════════════════
+% STAGE TITLE LABELS (Horizontal, clearly separated on the left margin at x=-2.9, outside the boxes)
+% ══════════════════════════════════════════════════════
+\node[anchor=east, font=\small\bfseries, text=blue!85!black] at (-3.5, -1.9) {Stage I:\\Semantic Planner};
+\node[anchor=east, font=\small\bfseries, text=teal!85!black] at (-3.5, -8.45) {Stage II:\\Traversal Controller};
+\node[anchor=east, font=\small\bfseries, text=purple!85!black] at (-3.5, -13.75) {Stage III:\\CDS Ranker};
+
+\end{tikzpicture}
