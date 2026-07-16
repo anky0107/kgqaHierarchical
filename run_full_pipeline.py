@@ -13,10 +13,10 @@ Runs the complete pipeline in order:
       Saves checkpoints/exp23_s3_full_hard_neg.pt
 
   STAGE C -- Beam Search Evaluation (Exp 21) with best available S3
-      Runs evaluate_e2e.py --agent exp15 for all available S3 versions.
+      Runs evaluate_stage3_cds.py for all available S3 versions.
 
   STAGE D -- Ensemble Evaluation (Exp 22) with best available S3
-      Runs evaluate_e2e.py --agent ensemble for all available S3 versions.
+      (Deprecated in new pipeline, evaluate_stage3_cds.py handles end-to-end)
 
 Usage:
     python run_full_pipeline.py                 # Full pipeline
@@ -159,54 +159,25 @@ def main():
         s3_versions.append("v6")
 
     # -------------------------------------------------------------------------
-    # STAGE C: Beam Search Evaluation (Exp 21) -- exp15 agent
+    # STAGE C: Beam Search Evaluation (Exp 21)
     # -------------------------------------------------------------------------
     log("-" * 60)
-    log("STAGE C: Exp 21 -- Beam Search Evaluation (exp15 agent)")
+    log("STAGE C: Exp 21 -- CDS Entity Evaluation")
     log("-" * 60)
 
-    for s3v in s3_versions:
-        key = f"exp21_beam_exp15_{s3v}"
-        if key in results and results[key].get("status") == "ok":
-            log(f"  SKIPPING {key} -- already recorded in results.")
-            continue
-        ok, elapsed = run(
-            [sys.executable, "-m", "cds_pipeline.evaluate_e2e",
-             "--agent", "exp15", "--s3", s3v],
-            f"Exp 21 Beam Search: exp15 + CDS {s3v}"
-        )
-        record_result(results, key, {
-            "status": "ok" if ok else "failed",
-            "elapsed_min": round(elapsed / 60, 1),
-            "agent": "exp15",
-            "s3": s3v,
-            "description": "Exp 21 Beam Search",
-        })
+    # We now use our new script that actually connects F1 -> F2 -> F3!
+    ok, elapsed = run(
+        [sys.executable, "eval/evaluate_stage3_cds.py"],
+        f"Eval Entity-Level CDS"
+    )
+    record_result(results, f"eval_cds", {
+        "status": "ok" if ok else "failed",
+        "elapsed_min": round(elapsed / 60, 1),
+    })
 
-    # -------------------------------------------------------------------------
-    # STAGE D: Ensemble Evaluation (Exp 22)
-    # -------------------------------------------------------------------------
-    log("-" * 60)
-    log("STAGE D: Exp 22 -- Ensemble Evaluation (exp9 + exp15)")
-    log("-" * 60)
-
-    for s3v in s3_versions:
-        key = f"exp22_ensemble_{s3v}"
-        if key in results and results[key].get("status") == "ok":
-            log(f"  SKIPPING {key} -- already recorded in results.")
-            continue
-        ok, elapsed = run(
-            [sys.executable, "-m", "cds_pipeline.evaluate_e2e",
-             "--agent", "ensemble", "--s3", s3v],
-            f"Exp 22 Ensemble: (exp9+exp15) + CDS {s3v}"
-        )
-        record_result(results, key, {
-            "status": "ok" if ok else "failed",
-            "elapsed_min": round(elapsed / 60, 1),
-            "agent": "ensemble",
-            "s3": s3v,
-            "description": "Exp 22 Ensemble",
-        })
+    log("=" * 70)
+    log("  PIPELINE COMPLETE")
+    log("=" * 70)
 
     # -------------------------------------------------------------------------
     # Summary
