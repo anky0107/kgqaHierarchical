@@ -233,6 +233,10 @@ class CDSDataCollector:
             for h in range(4):  # maximum 4-hop paths in CWQ
                 # Determine action: 0 → narrow beam (k=5), 1 → medium (k=10),
                 #                   2 → wide beam (k=50),  3 → STOP traversal
+                # NOTE: These inference beam widths are intentionally wider than
+                # the training beam widths {0:1, 1:5, 2:50} in exp15_strl.py.
+                # Widening at inference improves recall; the CDS reranker (F1/F2/F3)
+                # subsequently filters the noisier candidate pool.
                 action = torch.argmax(fwd['action_logits'][0, h]).item()
                 if action == 3: break  # agent signals end-of-path
 

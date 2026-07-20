@@ -155,14 +155,14 @@ Given question $q$ and topic entity $e_0$, the task is to retrieve answer set $\
 \section{Problem Formulation}
 \label{sec:probform}
 
-Static traversal strategies apply identical expansion behavior to all questions regardless of semantic complexity, causing over-exploration on simple queries and under-exploration on ambiguous ones. We formulate traversal-space control as a Markov Decision Process $\mathcal{M}=(\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{F})$, where states $s_t$ are latent semantic representations produced by the planner and actions regulate graph expansion width. The compact action space $\mathcal{A} = \{ a_{\text{tight}},\, a_{\text{medium}},\, a_{\text{loose}},\, a_{\text{stop}} \}$ provides four search-width controls: $a_{\text{tight}}$ restricts traversal to the top-1 relation (beam\,=\,1), $a_{\text{medium}}$ expands to top-5 (beam\,=\,5), $a_{\text{loose}}$ performs domain-guided search (beam\,=\,50), and $a_{\text{stop}}$ terminates the path. Adaptive control reduces traversal complexity from $\mathcal{O}(b^{H_{\max}})$ to $\mathcal{O}(k^{H_{\max}})$ where $k \ll b$. At each step the policy $\pi(a_t|s_t)$ selects a traversal action based on semantic confidence. The reward balances correctness against expansion cost:
+Static traversal strategies apply identical expansion behavior to all questions regardless of semantic complexity, causing over-exploration on simple queries and under-exploration on ambiguous ones. We formulate traversal-space control as a Markov Decision Process $\mathcal{M}=(\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{F})$, where states $s_t$ are latent semantic representations produced by the planner and actions regulate graph expansion width. The compact action space $\mathcal{A} = \{ a_{\text{tight}},\, a_{\text{medium}},\, a_{\text{loose}},\, a_{\text{stop}} \}$ provides four search-width controls: during training, $a_{\text{tight}}$ restricts traversal to the top-1 relation (beam\,=\,1), $a_{\text{medium}}$ expands to top-5 (beam\,=\,5), and $a_{\text{loose}}$ performs domain-guided search (beam\,=\,50); at inference, beam widths are widened to $\{5, 10, 50\}$ respectively to improve recall at the cost of a noisier candidate pool that the CDS reranker subsequently filters. $a_{\text{stop}}$ terminates the path. Adaptive control reduces traversal complexity from $\mathcal{O}(b^{H_{\max}})$ to $\mathcal{O}(k^{H_{\max}})$ where $k \ll b$. At each step the policy $\pi(a_t|s_t)$ selects a traversal action based on semantic confidence. The step-level reward combines a semantic alignment signal with efficiency and grounding components:
 
 \begin{equation}
 \label{eq:reward}
-R_t = \alpha\, Acc_t - \beta\, Cost_t - \omega\, Width_t
+R_t = \alpha\, R^{\text{sem}}_t + \beta\, R^{\text{conn}}_t + \gamma\, R^{\text{eff}}_t + R^{\text{entity}}_t + R^{\text{cur}}_t
 \end{equation}
 
-where $Acc_t$ is answer accuracy, $Cost_t$ is traversal cost, $Width_t$ is expansion width at step $t$, and $\alpha, \beta, \omega \ge 0$ balance correctness, traversal cost, and expansion width. This step-level reward $R_t$ is fed back to the reinforcement learning agent at each hop and serves as the optimization signal for policy gradient updates (as detailed in §\ref{sec:stage2_training}). Operating over four high-level actions rather than raw relation IDs keeps the policy space compact and optimization stable.
+where $R^{\text{sem}}_t$ is the maximum cosine similarity between the hop representation and the top-$k$ relation embeddings within the chosen beam, $R^{\text{conn}}_t$ is a connectivity proxy that thresholds the semantic score ($+0.3$ if best similarity $\ge 0.3$, else $-0.5$), $R^{\text{eff}}_t$ penalises wide actions (Tight $+0.3$, Medium $0.0$, Loose $-0.3$), $R^{\text{entity}}_t$ is a KG-anchored grounding bonus at hop~0 ($+0.6$ if the chosen beam intersects relations reachable from the topic entity, $-0.4$ otherwise), and $R^{\text{cur}}_t$ is a weak curriculum bonus ($+0.2$) during early training epochs when the gold relation appears in the beam. Coefficients: $\alpha{=}0.5$, $\beta{=}0.3$, $\gamma{=}0.2$. This step-level reward $R_t$ is fed back to the reinforcement learning agent at each hop and serves as the optimization signal for policy gradient updates (as detailed in §\ref{sec:stage2_training}). Operating over four high-level actions rather than raw relation IDs keeps the policy space compact and optimization stable.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%% METHODOLOGY %%%%%%%%%%%%%%%%%%%%%%%
@@ -234,7 +234,7 @@ The compact action space $\mathcal{A} = \{a_{\text{tight}}, a_{\text{medium}}, a
 \subsubsection{Training Objective}
 \label{sec:stage2_training}
 
-At each reasoning step $t$, the controller rolls out a symbolic KG traversal trajectory $\Xi = (s_0, a_0, o_0, \dots, s_T)$ over the Freebase LMDB subgraph. The step-level reward $R_t$ (Eq.~\ref{eq:reward}) uses $Acc_t \in \{0,1\}$ as a binary reachability signal (1 if the gold answer entity is reachable from the current traversal state), $Cost_t$ as graph edges expanded, and $Width_t$ as the action beam width. Graph-valid traversal receives an additional sparse connectivity bonus.
+At each reasoning step $t$, the controller rolls out a symbolic KG traversal trajectory $\Xi = (s_0, a_0, o_0, \dots, s_T)$ over the Freebase LMDB subgraph. The step-level reward $R_t$ (Eq.~\ref{eq:reward}) combines semantic alignment (cosine similarity between the hop representation and relation embeddings), a connectivity proxy, efficiency penalties for wide beam actions, and a KG-anchored entity-grounding bonus at hop~0 that checks whether the selected beam contains relations reachable from the topic entity in the knowledge graph.
 
 The reward $R_t$ is used to compute the value-function TD residual $\delta_t = R_t + \gamma_{\text{discount}} V_\phi(s_{t+1}) - V_\phi(s_t)$. These are accumulated into the Generalized Advantage Estimate (GAE)~\cite{schulman2016gae}:
 \begin{equation}
@@ -266,7 +266,7 @@ Given the traversal projection $z_t$ at step $t$, its paired gold relation embed
 \begin{equation}
 \mathcal{L}_{\text{InfoNCE}} = -\log \frac{\exp(S(z_t,r_t)/\tau)}{\exp(S(z_t,r_t)/\tau) + \sum_j \exp(S(z_t,r_j^-)/\tau)}
 \end{equation}
-with temperature $\tau=0.07$. The total STRL objective is $\mathcal{L}_{\text{STRL}} = w_{\text{sem}}\,\mathcal{L}_{\text{InfoNCE}} + \mathcal{L}^{\text{CLIP}}_{\text{PPO}}$, where $\mathcal{L}^{\text{CLIP}}_{\text{PPO}}$ uses clipped surrogate ratio with $\epsilon=0.2$. A curriculum anneals the semantic weight: $w_{\text{sem}}$ starts at 1.0 (semantic-grounding phase, epochs 1--5, backbone \emph{frozen}) and drops to 0.3 (RL refinement phase, epochs 6--20, backbone \emph{unfrozen}). Differential learning rates: lr\,=\,1e-5 for the Stage~I backbone, lr\,=\,1e-4 for the traversal and alignment heads. Stage~III is applied identically after STRL.
+with temperature $\tau=0.07$. The total STRL objective is $\mathcal{L}_{\text{STRL}} = w_{\text{sem}}\,\mathcal{L}_{\text{InfoNCE}} + \mathcal{L}^{\text{CLIP}}_{\text{PPO}}$, where $\mathcal{L}^{\text{CLIP}}_{\text{PPO}}$ uses clipped surrogate ratio with $\epsilon=0.2$. A two-phase curriculum controls the semantic weight: $w_{\text{sem}} = 1.0$ during the semantic-grounding phase (epochs 1--5, backbone \emph{frozen}), then drops to $w_{\text{sem}} = 0.3$ for the RL refinement phase (epochs 6--20, backbone \emph{unfrozen}). Differential learning rates: lr\,=\,1e-5 for the Stage~I backbone, lr\,=\,1e-4 for the traversal and alignment heads. Stage~III is applied identically after STRL.
 
 % -----------------------------------------------------------
 \subsection{Stage III: Candidate Disambiguation \& Selection}
@@ -283,9 +283,9 @@ F2 resolves semantic ambiguity by incorporating reasoning path context. An \text
 \label{sec:stage3_dpo}
 F3 replaces pointwise cross-encoding with a listwise generative judge trained via Direct Preference Optimization (DPO)~\cite{rafailov2023direct}—an RLHF-family method that optimizes a policy relative to a frozen reference using preference pairs without an explicit reward model.
 
-\textbf{Input.} For question $q$ with top-50 F2 candidates $\{e_1,\dots,e_{50}\}$, we construct a multiple-choice prompt $p = \text{``Q:~}q\;\text{1.}\;e_1\;\cdots\;\text{50.}\;e_{50}\;\text{Answer:''}$ (max 512 input tokens, 64 target tokens). All candidates appear simultaneously, enabling cross-candidate disambiguation—a structural advantage over pointwise scoring.
+\textbf{Input.} For question $q$ with the top-15 F2 candidates $\{e_1,\dots,e_{15}\}$, we construct a multiple-choice prompt $p = \text{``Q:~}q\;\text{1.}\;e_1\;\cdots\;\text{15.}\;e_{15}\;\text{Answer:''}$ (max 512 input tokens, 64 target tokens). The top-15 cutoff is determined by Flan-T5's 512-token context window; all candidates appear simultaneously, enabling cross-candidate disambiguation—a structural advantage over pointwise scoring.
 
-\textbf{Two-stage training.} First, Flan-T5-Base is fine-tuned via SFT cross-entropy on $(p, e^+)$ pairs to produce reference $\pi_{\text{ref}}$. Then DPO aligns $\pi_{\text{ref}}$ on preference pairs $(p, e^+, e^-)$—gold entity chosen, highest-scoring incorrect candidate rejected:
+\textbf{Two-stage training.} First, Flan-T5-Base is fine-tuned via SFT cross-entropy on $(p, e^+)$ pairs to produce reference $\pi_{\text{ref}}$. Then DPO aligns $\pi_{\text{ref}}$ on preference pairs $(p, e^+, e^-)$—gold entity chosen, a randomly sampled incorrect candidate from the F2-filtered pool rejected (all distractors are pre-filtered by MPNet and thus constitute hard negatives):
 \begin{equation}
 \label{eq:dpo}
 \mathcal{L}_{\text{DPO}} = -\mathbb{E}\!\left[
@@ -353,7 +353,7 @@ where $\beta_{\text{dpo}}=0.1$ controls the KL penalty. The final answer maximis
 
 \subsection{Main Results}
 
-Table~\ref{tab:main_results} presents the performance comparison. Our primary system (RLMC+DPO) achieves 42.12\% Hit@1. STRL achieves higher traversal recall (75.59\%) but lower Hit@1 (40.43\%), revealing a precision-recall trade-off: STRL's semantic grounding retrieves the gold entity more reliably into the candidate set, but noisier candidates are harder to disambiguate at the selection stage.
+Table~\ref{tab:main_results} presents the performance comparison. Our primary system (RLMC+DPO) achieves 42.12\% Hit@1. STRL achieves higher traversal recall (71.4\%) but lower Hit@1 (40.4\%), revealing a precision-recall trade-off: STRL's semantic grounding retrieves the gold entity more reliably into the candidate set, but noisier candidates are harder to disambiguate at the selection stage.
 
 \begin{table}[!ht]
 \centering
@@ -370,7 +370,7 @@ NSM~\cite{he2021improving} & 2021 & Dev & -- & 47.6\% \\
 TransferNet~\cite{shi2021transfernet} & 2021 & Dev & -- & 48.6\% \\
 \midrule
 Planner only (no RL) & -- & Dev & $\sim$58.0\% & 37.2\% \\
-STRL + CDS-DPO & -- & Dev & 75.6\% & 40.4\% \\
+STRL + CDS-DPO & -- & Dev & 71.4\% & 40.4\% \\
 \textbf{RLMC + CDS-DPO (Ours)} & -- & Dev & \textbf{63.1\%} & \textbf{42.1\%} \\
 \bottomrule
 \end{tabular}}
@@ -392,7 +392,7 @@ Table~\ref{tab:extended_metrics} reports efficiency and path-quality metrics.
 \textbf{Metric} & \textbf{RLMC+DPO} & \textbf{STRL+DPO} \\
 \midrule
 Hit@1 & \textbf{42.1\%} & 40.4\% \\
-Reasoning Recall & 63.1\% & \textbf{75.6\%} \\
+Reasoning Recall & 63.1\% & \textbf{71.4\%} \\
 Hits@5 & \textbf{52.1\%} & 48.8\% \\
 Path Accuracy & 41.6\% & \textbf{89.4\%} \\
 Depth Accuracy & 65.2\% & \textbf{92.2\%} \\
@@ -410,9 +410,9 @@ Peak VRAM & 6.2\,GB & \textbf{4.8\,GB} \\
 
 \section{Limitations and Future Work}
 
-The framework has three primary limitations. First, it relies on Freebase structural completeness; missing relations prevent retrieval unlike parametric LLMs. Second, the RL reward function is sensitive to $\alpha,\beta,\omega$ weighting; poor initialization can trap the agent in local minima. Third, RoBERTa-large (355M) limits interpretation of deeply nested linguistic structures.
+The framework has three primary limitations. First, it relies on Freebase structural completeness; missing relations prevent retrieval unlike parametric LLMs. Second, the RL reward function is sensitive to $\alpha,\beta,\gamma$ weighting; poor initialization can trap the agent in local minima. Third, RoBERTa-large (355M) limits interpretation of deeply nested linguistic structures.
 
-The most significant opportunity for improvement lies in the CDS stage: the 17\,pp gap between STRL's traversal recall (75.6\%) and RLMC's Hit@1 (42.1\%) shows that stronger DPO preference data, deeper path-aware cross-attention, or graph-based answer verification could yield substantial gains. Longer-term directions include integrating lightweight LLMs for semantic planning guidance and extending to dynamic KGs with continuous graph retrieval.
+The most significant opportunity for improvement lies in the CDS stage: the gap between STRL's traversal recall (71.4\%) and RLMC's Hit@1 (42.1\%) shows that stronger DPO preference data, deeper path-aware cross-attention, or graph-based answer verification could yield substantial gains. Longer-term directions include integrating lightweight LLMs for semantic planning guidance and extending to dynamic KGs with continuous graph retrieval.
 
 \section{Conclusion}
 
