@@ -460,7 +460,7 @@ Since full re-training ablations are computationally prohibitive, we analyze com
 
 \subsection{DPO vs.\ SFT-Only Judge}
 
-Replacing the DPO-aligned T5 judge with the SFT-only checkpoint incurs a minor $\approx$1\,pp ``alignment tax'' consistent with known DPO behaviour at small model scales~\cite{rafailov2023direct}. The DPO formulation is retained as it directly instantiates RL-family preference alignment at the candidate selection layer—the paper's second RL contribution—ensuring methodological coherence between the traversal-control and selection stages. The marginal accuracy trade-off is accepted in favour of this narrative consistency.
+Replacing the DPO-aligned T5 judge with the SFT-only checkpoint yields a minor $\approx$1\,pp accuracy improvement (41.66\% vs 40.78\%), indicating a slight ``alignment tax'' consistent with known DPO behaviour at small model scales~\cite{rafailov2023direct}. The DPO formulation is nevertheless retained as it directly instantiates RL-family preference alignment at the candidate selection layer—the paper's second RL contribution—ensuring methodological coherence between the traversal-control and selection stages. The marginal accuracy trade-off is accepted in favour of this narrative consistency.
 
 \subsection{Practical Training Challenges}
 
@@ -468,7 +468,7 @@ Several engineering challenges arose that highlight the difficulty of RL over la
 \begin{itemize}
   \item \textbf{Policy collapse from sparse rewards.} Initializing the RL controller from scratch frequently caused policy collapse; pre-training Stage~I first via supervised objectives was essential for stable RL warm-starting.
   \item \textbf{Traversal explosion.} Early policy iterations expanded tens of thousands of edges per hop in dense Freebase neighborhoods (e.g., high-degree sport/business entities), causing VRAM overflow. Enforcing hard beam caps ($k \le 50$ for \textsc{Loose}) resolved this.
-  \item \textbf{Reward sensitivity.} The agent was highly sensitive to $\alpha,\beta,\omega$ balance. Setting $\alpha$ too high caused the agent to prefer LOOSE regardless of confidence; $\beta$ too high caused premature STOP. Final values were found via grid search on the dev set.
+  \item \textbf{Reward sensitivity.} The agent was highly sensitive to $\alpha,\beta,\gamma$ balance. Setting $\alpha$ too high caused the agent to prefer LOOSE regardless of confidence; $\beta$ too high caused premature STOP. Final values were found via grid search on the dev set.
   \item \textbf{Semantic drift without curriculum.} Without the STRL InfoNCE curriculum, the RLMC agent learned to exploit graph topology shortcuts (e.g., high-degree hub nodes reachable via any relation) rather than semantically grounded paths.
   \item \textbf{Windows compatibility constraints.} Training with \texttt{gradient\_checkpointing} and multi-worker dataloaders caused OS paging conflicts on Windows. Setting \texttt{dataloader\_num\_workers=0} resolved stability issues at a minor throughput cost.
 \end{itemize}
@@ -492,7 +492,7 @@ The semantic alignment loss $\mathcal{L}_{\text{align}} = 1 - S(z_t, \bar{r}_t)$
 
 \subsection{Candidate Disambiguation Analysis}
 
-The gap between Reasoning Recall (63.1\% RLMC, 75.6\% STRL) and Hit@1 (42.1\%, 40.4\%) indicates the CDS pipeline is the primary performance bottleneck. The F1 Fast Filter and F2 Path Ranker are highly effective at noise reduction; the limiting factor is F3 DPO Judge performance when the candidate set is large and contains many semantically similar entities (e.g., multiple people with the same name from different eras). Stronger preference data construction or a cross-encoder F3 with explicit path conditioning would likely close this gap.
+The gap between Reasoning Recall (63.1\% RLMC, 71.4\% STRL) and Hit@1 (42.1\%, 40.4\%) indicates the CDS pipeline is the primary performance bottleneck. The F1 Fast Filter and F2 Path Ranker are highly effective at noise reduction; the limiting factor is F3 DPO Judge performance when the candidate set is large and contains many semantically similar entities (e.g., multiple people with the same name from different eras). Stronger preference data construction or a cross-encoder F3 with explicit path conditioning would likely close this gap.
 
 \subsection{Reasoning Depth and Stop Prediction}
 
@@ -505,7 +505,7 @@ The adaptive stop mechanism reduces average reasoning depth on single-hop questi
 
 \subsection{Traversal Complexity}
 
-Traditional exhaustive graph traversal operates at $\mathcal{O}(b^{H_{\max}})$ where $b$ is the average branching factor of Freebase ($b \approx 37$ in our subgraph). Adaptive control reduces this to $\mathcal{O}(k^{H_{\max}})$ where $k \in \{1, 5, 50\}$ for \textsc{Tight}/\textsc{Medium}/\textsc{Loose}, giving a worst-case reduction of $(37/50)^4$ and a best-case of $(37/1)^4 \approx 1.9 \times 10^6\times$ for all-TIGHT paths.
+Traditional exhaustive graph traversal operates at $\mathcal{O}(b^{H_{\max}})$ where $b$ is the average branching factor of Freebase ($b \approx 37$ in our subgraph). Adaptive control reduces this to $\mathcal{O}(k^{H_{\max}})$ where $k \in \{5, 10, 50\}$ (inference beam widths) for \textsc{Tight}/\textsc{Medium}/\textsc{Loose}, giving a worst-case reduction of $(37/50)^4$ and a best-case of $(37/5)^4 \approx 3 \times 10^3\times$ for all-TIGHT paths.
 
 \subsection{Planner and Policy Complexity}
 
@@ -513,6 +513,6 @@ The semantic planner applies transformer self-attention over $H_{\max}=4$ latent
 
 \subsection{CDS Inference Complexity}
 
-F1 (bi-encoder) uses pre-computed entity embeddings: $\mathcal{O}(|\mathcal{B}|)$ cosine lookups. F2 (path ranker) runs one MPNet forward pass per F1 candidate: $\mathcal{O}(200)$ passes. F3 (DPO Judge) runs one T5 forward pass over the concatenated top-50 prompt: $\mathcal{O}(1)$ per question. The CDS pipeline adds a fixed overhead of $\approx$120\,ms/question regardless of $|\mathcal{B}|$.
+F1 (bi-encoder) uses pre-computed entity embeddings: $\mathcal{O}(|\mathcal{B}|)$ cosine lookups. F2 (path ranker) runs one MPNet forward pass per F1 candidate: $\mathcal{O}(200)$ passes. F3 (DPO Judge) runs one T5 forward pass over the concatenated top-15 prompt: $\mathcal{O}(1)$ per question. The CDS pipeline adds a fixed overhead of $\approx$120\,ms/question regardless of $|\mathcal{B}|$.
 
 \end{document}

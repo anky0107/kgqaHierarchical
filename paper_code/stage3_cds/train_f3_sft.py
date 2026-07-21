@@ -13,7 +13,7 @@ length reasons) and is trained as a **listwise generative judge** — it reads a
 multi-candidate prompt and is asked to generate the exact name of the correct
 answer entity as free text.
 
-This SFT checkpoint (exp26_t5_generative_s3.pt) is the initialisation point
+This SFT checkpoint (exp31_t5_mc_s3.pt) is the initialisation point
 for the subsequent DPO alignment step (train_f3_dpo.py / Exp-38).
 
 Architecture
@@ -35,7 +35,7 @@ Pipeline position
         │
         ▼
   [train_f3_sft.py]  ← THIS FILE  (SFT warm-up)
-        │  checkpoint: checkpoints/exp26_t5_generative_s3.pt
+        │  checkpoint: checkpoints/exp31_t5_mc_s3.pt
         ▼
   [build_dpo_dataset.py]  construct preference pairs
         │
@@ -50,7 +50,7 @@ Inputs
 
 Outputs
 -------
-- checkpoints/exp26_t5_generative_s3.pt  : fine-tuned Flan-T5 weights (SFT)
+- checkpoints/exp31_t5_mc_s3.pt  : fine-tuned Flan-T5 weights (SFT)
 
 Key hyperparameters
 -------------------
@@ -102,7 +102,7 @@ from cds_pipeline.utils import path_to_nl
 
 # ── Global constants ──────────────────────────────────────────────────────────
 MODEL_NAME  = "google/flan-t5-base"                       # F3 backbone (§V-E)
-CKPT_NAME   = "exp26_t5_generative_s3.pt"                 # output checkpoint name
+CKPT_NAME   = "exp31_t5_mc_s3.pt"                 # output checkpoint name
 TRAIN_FILE  = "data/exp18_cds_train_hard_full.json"       # hard-negative training set
 DEV_FILE    = "data/exp16_cds_dev.json"                   # dev set path
 

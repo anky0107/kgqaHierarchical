@@ -25,7 +25,7 @@ Loss Design (what makes the RL agent understand semantics):
 
 Training curriculum:
   Epochs 0-4  : λ_sem=1.0, weak gold bonus in reward (grounding phase)
-  Epochs 5-10 : λ_sem=0.3, pure semantic reward (RL refinement phase)
+  Epochs 5-19 : λ_sem=0.3, pure semantic reward (RL refinement phase)
 
 Dev metric — Semantic Hit@1:
   At each hop, rank all relations by cosine_sim(hop_repr, rel_emb_bank).
