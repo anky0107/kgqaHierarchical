@@ -353,7 +353,7 @@ where $\beta_{\text{dpo}}=0.1$ controls the KL penalty. The final answer maximis
 
 \subsection{Main Results}
 
-Table~\ref{tab:main_results} presents the performance comparison. Our primary system (RLMC+DPO) achieves 42.12\% Hit@1. STRL achieves higher traversal recall (71.4\%) but lower Hit@1 (40.4\%), revealing a precision-recall trade-off: STRL's semantic grounding retrieves the gold entity more reliably into the candidate set, but noisier candidates are harder to disambiguate at the selection stage.
+Table~\ref{tab:main_results} presents the performance comparison. Our primary system (RLMC+DPO) achieves 42.12\% Hit@1. STRL achieves higher traversal recall (71.4\%) but lower Hit@1 (40.8\%), revealing a precision-recall trade-off: STRL's semantic grounding retrieves the gold entity more reliably into the candidate set, but noisier candidates are harder to disambiguate at the selection stage.
 
 \begin{table}[!ht]
 \centering
@@ -370,7 +370,7 @@ NSM~\cite{he2021improving} & 2021 & Dev & -- & 47.6\% \\
 TransferNet~\cite{shi2021transfernet} & 2021 & Dev & -- & 48.6\% \\
 \midrule
 Planner only (no RL) & -- & Dev & $\sim$58.0\% & 37.2\% \\
-STRL + CDS-DPO & -- & Dev & 71.4\% & 40.4\% \\
+STRL + CDS-DPO & -- & Dev & 71.4\% & 40.8\% \\
 \textbf{RLMC + CDS-DPO (Ours)} & -- & Dev & \textbf{63.1\%} & \textbf{42.1\%} \\
 \bottomrule
 \end{tabular}}
@@ -391,7 +391,7 @@ Table~\ref{tab:extended_metrics} reports efficiency and path-quality metrics.
 \toprule
 \textbf{Metric} & \textbf{RLMC+DPO} & \textbf{STRL+DPO} \\
 \midrule
-Hit@1 & \textbf{42.1\%} & 40.4\% \\
+Hit@1 & \textbf{42.1\%} & 40.8\% \\
 Reasoning Recall & 63.1\% & \textbf{71.4\%} \\
 Hits@5 & \textbf{52.1\%} & 48.8\% \\
 Path Accuracy & 41.6\% & \textbf{89.4\%} \\
@@ -460,7 +460,7 @@ Since full re-training ablations are computationally prohibitive, we analyze com
 
 \subsection{DPO vs.\ SFT-Only Judge}
 
-Replacing the DPO-aligned T5 judge with the SFT-only checkpoint yields a minor $\approx$1\,pp accuracy improvement (41.66\% vs 40.78\%), indicating a slight ``alignment tax'' consistent with known DPO behaviour at small model scales~\cite{rafailov2023direct}. The DPO formulation is nevertheless retained as it directly instantiates RL-family preference alignment at the candidate selection layer—the paper's second RL contribution—ensuring methodological coherence between the traversal-control and selection stages. The marginal accuracy trade-off is accepted in favour of this narrative consistency.
+Replacing the DPO-aligned T5 judge with the SFT-only checkpoint yields a minor $\approx$1\,pp accuracy improvement (41.7\% vs 40.8\%), indicating a slight ``alignment tax'' consistent with known DPO behaviour at small model scales~\cite{rafailov2023direct}. The DPO formulation is nevertheless retained as it directly instantiates RL-family preference alignment at the candidate selection layer—the paper's second RL contribution—ensuring methodological coherence between the traversal-control and selection stages. The marginal accuracy trade-off is accepted in favour of this narrative consistency.
 
 \subsection{Practical Training Challenges}
 
@@ -492,7 +492,7 @@ The semantic alignment loss $\mathcal{L}_{\text{align}} = 1 - S(z_t, \bar{r}_t)$
 
 \subsection{Candidate Disambiguation Analysis}
 
-The gap between Reasoning Recall (63.1\% RLMC, 71.4\% STRL) and Hit@1 (42.1\%, 40.4\%) indicates the CDS pipeline is the primary performance bottleneck. The F1 Fast Filter and F2 Path Ranker are highly effective at noise reduction; the limiting factor is F3 DPO Judge performance when the candidate set is large and contains many semantically similar entities (e.g., multiple people with the same name from different eras). Stronger preference data construction or a cross-encoder F3 with explicit path conditioning would likely close this gap.
+The gap between Reasoning Recall (63.1\% RLMC, 71.4\% STRL) and Hit@1 (42.1\%, 40.8\%) indicates the CDS pipeline is the primary performance bottleneck. The F1 Fast Filter and F2 Path Ranker are highly effective at noise reduction; the limiting factor is F3 DPO Judge performance when the candidate set is large and contains many semantically similar entities (e.g., multiple people with the same name from different eras). Stronger preference data construction or a cross-encoder F3 with explicit path conditioning would likely close this gap.
 
 \subsection{Reasoning Depth and Stop Prediction}
 
